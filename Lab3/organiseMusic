@@ -1,0 +1,16 @@
+#!/bin/bash
+
+for file in *.mp3 ; do
+	trim=${file/ - /-}
+	artist=${trim%-*}
+	artist=${artist/ /}
+	song=${trim#*-}
+	song=${song/ .mp3/.mp3}
+	if [[ -d ./$artist ]] ; then
+		mv "$file" "$artist"/"$song"
+	else
+		echo "$artist subdirectory created"
+		mkdir "$artist" && mv "$file" "$artist"/"$song"
+	fi
+	echo "$file moved to $artist/$song"
+done

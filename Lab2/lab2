@@ -1,0 +1,23 @@
+Lab 2
+
+1) ./Lab2/Tmp/gotMe.bash
+   ./Lab2/list
+2) find . -type f -name *.bash
+3) 499 breadIsDangerous.txt
+4) 499
+5) ls -1 | wc -w
+6) grep 'bread' breadIsDangerous.txt
+7) grep 'bread' breadIsDangerous.txt | wc -l
+8) There is now a spellExample.bak (backup file)
+9) Shows the changes between the backup and updated file
+   1c1 (line 1, a single change was made in the same line)
+   3c3 (line 3, 3 changes were made in the same line)
+   5a6 (line 5, a line was added into line 6)
+10) No output (no changes after all)
+11) No, but it makes sense. The sort command by definition looks at the first character in the sentence and sorts by that. Since the 1st character in 20 is 2, it will be ranked less than 6.
+12) Yes. This sorted by numerical value.
+13) Chronological order
+14) du * | sort -nr | head -n8
+15) 0 means successful, 1 means unsuccessful, 2 means invalid usage
+16) File breadIsDangerous.txt has 499 words
+17) echo "The current directory is: $PWD"

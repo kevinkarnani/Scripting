@@ -1,0 +1,123 @@
+#!/bin/bash
+
+case $# in
+	0)
+		CURRENT_DIR=$PWD
+		;;
+	1)
+		CURRENT_DIR=$1
+		;;
+	*)
+		echo "Only 1 argument can be passed in. You provided $# arguments."
+		exit 2
+		;;
+esac
+
+declare -a indexList
+declare -a reqList
+declare -a totalList
+
+for dir in $( find "${CURRENT_DIR}" -type d); do
+	if [[ -f "$dir/dir.json" ]]; then
+		rm -rf "$dir/dir.json"
+	fi
+
+	if [[ -f "$dir/README" ]]; then
+		indexList=$( awk -f ./index.awk "$dir/README" )
+		reqList=$( awk -f ./required.awk "$dir/README" )
+	fi
+
+	# takes care of index files
+	echo "{" > "$dir/dir.json"
+	echo -en "\t\"index\": \"" >> "$dir/dir.json"
+	for file in ${indexList[@]}; do
+		totalList+=($file)
+		a=0
+		if [[ $a -eq 0 ]]; then
+			echo -n "$file" >> "$dir/dir.json"
+			a=1
+		else
+			echo -n ", $file" >> "$dir/dir.json"
+		fi
+	done
+	echo "\"," >> "$dir/dir.json"
+
+	# takes care of required files
+	echo -e "\t\"required\": {" >> "$dir/dir.json"
+	echo -en "\t\t\"files\": [" >> "$dir/dir.json"
+	a=0
+	for file in ${reqList[@]}; do
+		totalList+=($file)
+		if [[ -f "$dir/$file" ]]; then
+			if [[ a -eq 0 ]]; then
+				echo -n "\"$file\"" >> "$dir/dir.json"
+				a=1
+			else
+				echo -n ", \"$file\"" >> "$dir/dir.json"
+			fi
+		fi
+	done
+	echo "]," >> "$dir/dir.json"
+
+	# takes care of "required" dirs
+	echo -en "\t\t\"directories\": [" >> "$dir/dir.json"
+	a=0
+	for file in ${reqList[@]}; do
+		if [[ -d "$dir/$file" ]]; then
+			if [[ $a -eq 0 ]]; then
+				echo -n "\"$file\"" >> "$dir/dir.json"
+				a=1
+			else
+				echo -n ", \"$file\"" >> "$dir/dir.json"
+			fi
+		fi
+	done
+
+	echo "]" >> "$dir/dir.json"
+	echo -e "\t}," >> "$dir/dir.json"
+
+	# takes care of "other" files
+	echo -e "\t\"others\": {" >> "$dir/dir.json"
+	echo -en "\t\t\"files\": [" >> "$dir/dir.json"
+	a=0
+	for file in $( ls "$dir" -1 ); do
+		include=true
+		for element in ${totalList[@]}; do
+			if [[ $element == ${file} ]]; then
+				include=false
+			fi
+		done
+
+		if $include && [[ -f "$dir/$file" ]]; then
+			if [[ $a -eq 0 ]]; then
+				echo -n "\"$file\"" >> "$dir/dir.json"
+				a=1
+			else
+				echo -n ", \"$file\"" >> "$dir/dir.json"
+			fi
+		fi
+	done
+	echo "]," >> "$dir/dir.json"
+	
+	# takes care of "other" dirs
+	echo -en "\t\t\"directories\": [" >> "$dir/dir.json"
+	a=0
+	for file in $( ls "$dir" -1 ); do
+		include=true
+      for element in ${totalList[@]}; do
+         if [[ $element == ${file} ]]; then
+            include=false
+         fi
+      done
+
+      if $include && [[ -d "$dir/$file" ]]; then
+			if [[ $a -eq 0 ]]; then
+				echo -n "\"$file\"" >> "$dir/dir.json"
+				a=1
+			else
+				echo -n ", \"$file\"" >> "$dir/dir.json"
+			fi
+      fi
+	done
+	echo -en "]\n\t}\n}" >> "$dir/dir.json"
+done

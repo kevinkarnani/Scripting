@@ -1,0 +1,11 @@
+{
+	"index": "top.html",
+	"required": {
+		"files": ["test1", "testa"],
+		"directories": []
+	},
+	"others": {
+		"files": ["dir.json", "README", "test2", "testb"],
+		"directories": []
+	}
+}

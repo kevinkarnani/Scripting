@@ -1,0 +1,13 @@
+Lab 3
+
+1) true because 13 starts with 1, which is lexically less than 2
+2) "All we have to decide is what to do with the chocolate that is given us..." because chocolate was found in mySettings and redirected to /dev/null successfully
+3) 2 because the let operator does integer arithmetic, meaning division is actually floor division. Since 13/5 = 2r3, (( 13/5 )) = 2
+4) 0 because echo $? gives us the exit status of the previous command, and the previous command was successful
+5) "5 12 13" and "5  13". They are different because the first command was run in a subshell, and changes in a subshell do not persist in the parent shell
+6) Item \n Another \n Item
+7) Item \n Another Item
+8) Item \n Another Item
+9) see count.bash
+10) see reextend
+11) see organiseMusic

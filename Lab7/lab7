@@ -1,0 +1,48 @@
+Lab 7
+
+1) The add function uses a pointer to a state to add a suffix to the beginning of the suffix list. The addSuffix function searches by prefix, adds if found, creates if not.
+
+2) The lookup function searches the statetab for a prefix. Return state pointer if found, else, create new prefix based on create boolean. Called in add() and generate().
+
+3) Visualization of table:
+
+prefix          | suffix
+---------------------------------
+(NULL) (NULL)   | It's
+(NULL)  It's    | a
+ It's    a      | new
+  a     new     | dawn
+ new   dawn     | (NULL)
+
+4) "It's" has 3 pointers, "a" has 3 pointers, "new" has 3 pointers, and "dawn" has 2 pointers.
+
+5) Cleanup code:
+
+void* cleanup(State *state) {
+	State *temp = NULL;
+	while (state != NULL) {
+		temp = state -> next;
+		free(state);
+		state = temp;
+	}
+}
+
+6) It seems to work properly. Had to look up how exactly the free() function works.
+
+7) After running cleanup(), the strings are removed from memory. The way free() works, we are guaranteed an error if we try to remove a string that was already removed.
+
+8) In the C++ code, prefixes are stored in a queue (double ended). We can both insert and delete from the back in constant time, which provides an advantage over vectors.
+
+9) In the C++ code, map is used as the built-in hash table (dictionary). 
+
+10) The prefixes are the keys and the values are string arrays holding the suffices. 
+
+11) The stdlib in C++ is much more useful and allows us to alter each key-value pair without worrying about if the right pointer got deleted afterwards.
+
+12) In the Python code, the prefixes are stored in a 2 element tuple (duple).
+
+13) The built-in Python dictionary is used.
+
+14) The suffices are stored in a Python list.
+
+15) Python does memory management for us, which makes it easier and take less time to code. Dictionary is built into Python as well.

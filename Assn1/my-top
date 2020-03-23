@@ -1,0 +1,158 @@
+#!/bin/bash
+
+case $# in
+	0)
+		CURRENT_DIR=$PWD
+		;;
+	1)
+		CURRENT_DIR=$1
+		;;
+	*)
+		echo "Only 1 argument can be passed in. You provided $# arguments."
+		exit 2
+		;;
+esac
+
+folder_recursion() {
+	for DIR in $( find "$1" -type d ); do
+		if [[ -d "$DIR" ]]; then
+			touch "$DIR/dir.json"
+			touch "$DIR/reqList"
+			touch "$DIR/reqFiles"
+			touch "$DIR/reqDirs"
+			index_JSON $DIR
+			compose_JSON $DIR
+		fi
+	done
+}
+
+index_JSON() {
+	echo -e "{" >> "$1/dir.json"
+	echo -en "\t\"index\": "
+	if [[ -f "$1/README" ]]; then
+		awk -f ./index.awk "$1/README" >> "$1/dir.json"
+	fi
+}
+
+compose_JSON() {
+	echo -e "\t\"required\": {" >> "$1/dir.json"
+	if [[ -f "$1/README" ]]; then
+		awk -f ./required.awk "$1/README" >> "$1/reqList"
+	fi
+	decompose_req_list $1
+	echo -e "t\"other\" : {" >> "$1/dir.json"
+	get_others $1
+}
+
+decompose_req_list() {
+	while read -r line; do
+		if [[ -d $file ]]; then
+			echo $file >> "$1/reqDirs"
+		elif [[ -f $file ]]; then
+			echo $file >> "$1/reqFiles"
+		else
+			echo "Unknown file type."
+			exit 2
+		fi
+	done < "$1/reqList"
+	rm -rf "$1/reqList"
+	get_req_files $1
+	get_req_dirs $1
+
+}
+
+get_req_files() {
+	echo -en "\t\t\"files\": [" >> "$1/dir.json"
+	entry=0
+	while read -r line; do
+		if [[ $entry -eq 0 ]]; then
+			entry=1
+			echo -en " \"$line\"" >> "$1/dir.json"
+		else
+			echo -en ", \"$line\"" >> "$1/dir.json"
+		fi
+	done < "$1/reqFiles"
+	echo -e " ]," >> "$f/dir.json"
+	rm -rf "$1/reqFiles"
+}
+
+get_req_dirs() {
+	echo -en "\t\t\"directories\" : [" >> "$1/dir.json"
+	entry=0
+	while read -r line; do
+		if [[ $entry -eq 0 ]]; then
+         entry=1
+         echo -en " \"$line\"" >> "$1/dir.json"
+      else
+         echo -en ", \"$line\"" >> "$1/dir.json"
+      fi
+   done < "$1/reqDirs"
+	echo -e "]" >> "$1/dir.json"
+	echo -e "\t}," >> "$1/dir.json"
+	rm -rf "$1/reqDirs"
+}
+
+get_others() {
+	for file in $1; do
+		if [ "$file" != "dir.json" ]; then
+			if grep -q $file "$1/dir.json"; then
+				:
+			else
+				touch "$1/otherList"
+				touch "$1/otherFiles"
+				touch "$1/otherDirs"
+				echo $file >> "$1/otherList"
+			fi
+		fi
+	done
+	decompose_other_list $1
+}
+
+decompose_other_list() {
+	while read -r line; do
+		if [[ -d $file ]]; then
+         echo $file >> "$1/otherDirs"
+      elif [[ -f $file ]]; then
+         echo $file >> "$1/otherFiles"
+      else
+         echo "Unknown file type."
+         exit 2
+		fi
+   done < "$1/otherList"
+	rm -rf "$1/otherList"
+	get_other_files $1
+	get_other_dirs $1
+}
+
+get_other_files() {
+	echo -en "\t\t\"files\": [" >> "$1/dir.json"
+   entry=0
+   while read -r line; do
+      if [[ $entry -eq 0 ]]; then
+         entry=1
+         echo -en " \"$line\"" >> "$1/dir.json"
+      else
+         echo -en ", \"$line\"" >> "$1/dir.json"
+      fi
+   done < "$1/otherFiles"
+   echo -e " ]," >> "$f/dir.json"
+   rm -rf "$1/otherFiles"
+}
+
+get_other_dirs() {
+	echo -en "\t\t\"directories\" : [" >> "$1/dir.json"
+   entry=0
+   while read -r line; do
+      if [[ $entry -eq 0 ]]; then
+         entry=1
+         echo -en " \"$line\"" >> "$1/dir.json"
+      else
+         echo -en ", \"$line\"" >> "$1/dir.json"
+      fi
+   done < "$1/otherDirs"
+   echo -e "]" >> "$1/dir.json"
+   echo -e "\t}," >> "$1/dir.json"
+   rm -rf "$1/otherDirs"
+}
+
+folder_recursion $CURRENT_DIR

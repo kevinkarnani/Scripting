@@ -1,0 +1,294 @@
+#!/usr/bin/python3
+
+# Author: Kevin Karnani
+# Class: CS 265
+# Due Date: 03/07/2020
+# Language + Version: Python 3.6.9
+# Purpose: The script functions like a cash register. It can be initialized, can perform purchases, make change, and give reports.
+#			  The state gets saved to state.json. Init creates/resets the file, whereas every other function pulls from and updates it.
+# 			  Exit codes: 0 (success), 1 (bad args), 2 (amount's dont jibe), 3 (not enough money), and 4 (can't open state file).
+
+from sys import argv, exit
+import json, os
+
+def init(args: list):
+	"""Initializes the cash register with a number of bills per denomination.
+		Running this command clears all previous state.
+		Arguments:
+			args: a list of all arguments necessary to initialize the cash register
+		Output:
+			N/A"""
+	try:
+		equal_index = args.index('=')	# get the index of the '='
+		
+		if len(args[:equal_index]) != 1: # only one element allowed before the index
+			raise TypeError
+		
+		amount = int(args[equal_index - 1])
+		
+		if amount < 0: # no negative numbers allowed
+			raise ValueError
+		
+		denominations = list(map(lambda x: int(x), args[equal_index + 1:])) # converts all the denomination args to ints
+		negative_list = list(filter(lambda x: x < 0, denominations)) # creates array of negative denomination values
+		
+		if len(negative_list) or not len(denominations): # either a negative number or no denominations provided
+			raise ValueError
+		elif len(denominations) <= 4:
+			while len(denominations) != 4:
+				denominations.append(0) # append any missing denominations
+		else:	
+			raise ValueError # too many denominations provided
+		
+		total = get_total(denominations)
+		
+		if total != amount: # left and right side don't match
+			exit(2)
+		
+		update_file(denominations, 0) # reset/create the state file
+	except ValueError:	
+		exit(1)
+	except TypeError:	
+		exit(1)
+
+def purchase(args: list):
+	"""Performs a sale for the total amount of price given bills of each denomination.
+		If the total number of bills exceeds the amount of the price, it will make change.
+		Arguments:
+			args: a list of all arguments necessary to perform a sale
+		Output:
+			Single line, if successful, of change returned in the number of denominations"""
+
+	data = get_from_file()
+	sales = int(data['sales'])
+	total = int(data['total'])
+	ones = int(data['ones'])
+	fives = int(data['fives'])
+	tens = int(data['tens'])
+	twenties = int(data['twenties'])
+
+	try:
+		equal_index = args.index('=') # get the index of '='
+		
+		if len(args[:equal_index]) != 1: # only one element allowed before '='
+			raise TypeError
+		
+		purchase_amount = int(args[equal_index - 1])
+		
+		if purchase_amount < 0: # no negative amounts allowed
+			raise ValueError
+		
+		denominations = list(map(lambda x: int(x), args[equal_index + 1:])) # converts all the denomination args to ints
+		negative_list = list(filter(lambda x: x < 0, denominations)) # creates array of negative denomination values
+		
+		if len(negative_list) or not len(denominations): # negative or no denominations
+			raise ValueError
+		elif len(denominations) <= 4:
+			while len(denominations) != 4:
+				denominations.append(0) # append missing denominations
+		else:
+			raise ValueError # too many denominations
+	
+		total_bills = get_total(denominations)
+			
+		# add all the denominations to our register
+		ones += denominations[0]
+		fives += denominations[1]
+		tens += denominations[2]
+		twenties += denominations[3]
+		
+		# Make sure they gave us enough to pay
+		if total_bills < purchase_amount:	
+			exit(2)
+
+		change = total_bills - purchase_amount
+	
+		ones_to_give, fives_to_give, tens_to_give, twenties_to_give = 0, 0, 0, 0
+		
+		# figure out how many denominations to give
+		while change > 0:
+			if change >= 20 and twenties > 0:
+				change -= 20
+				twenties -= 1
+				twenties_to_give += 1
+			elif change >= 10 and tens > 0:
+				change -= 10
+				tens -= 1
+				tens_to_give += 1
+			elif change >= 5 and fives > 0:
+				change -= 5
+				fives -= 1
+				fives_to_give += 1
+			elif change >= 1 and ones > 0:
+				change -= 1
+				ones -= 1
+				ones_to_give += 1
+			else: # can't make change
+				exit(3)
+
+		sales += purchase_amount
+
+		update_file([ones, fives, tens, twenties], sales) # update the state
+		message = ''
+		
+		# gets rid of trailing 0 denominations
+		if twenties_to_give:
+			message = f'{ones_to_give} {fives_to_give} {tens_to_give} {twenties_to_give}'
+		elif tens_to_give:
+			message = f'{ones_to_give} {fives_to_give} {tens_to_give}'
+		elif fives_to_give:
+			message = f'{ones_to_give} {fives_to_give}'
+		else:
+			message = f'{ones_to_give}'
+
+		print(message)
+	except ValueError:	
+		exit(1)
+	except TypeError:	
+		exit(1)
+
+
+def change(args: list):
+	"""Given a number of bills of each denomination as tendered, return the number of bills per denomination in bills_requested.
+		Change is made with the largest available denominations.
+		Arguments:
+			args: a list of arguments necessary to make change
+		Output:
+			Single line, if successful, of change_returned (same as bills_requested)"""
+
+	data = get_from_file()
+	sales = int(data['sales'])
+	ones = int(data['ones'])
+	fives = int(data['fives'])
+	tens = int(data['tens'])
+	twenties = int(data['twenties'])
+
+	try:
+		equal_index = args.index('=') # get index of '='
+		tendered = list(map(lambda x: int(x), args[:equal_index])) # everything before '=' is what they give us
+		negative_t = list(filter(lambda x: x < 0, tendered)) # creates array of negative tendered values
+		requested = list(map(lambda x: int(x), args[equal_index + 1:])) # everything after '=' is what they request
+		negative_r = list(filter(lambda x: x < 0, requested)) # creates array of negative requested values
+		
+
+		if len(negative_t) or not len(tendered) or len(negative_r) or not len(requested): # they give or ask for nothing/negative values
+			raise ValueError
+		if len(tendered) <= 4:
+			while len(tendered) != 4:
+				tendered.append(0) # if denominations missing, append 0 as their value
+		if len(requested) <= 4:
+			while len(requested) != 4:
+				requested.append(0) # same as above
+		else:
+			raise ValueError # too many denominations provided
+		
+		total_tendered = get_total(tendered)
+		total_requested = get_total(requested)
+		
+		if total_tendered != total_requested: # buyer being dishonest?
+			exit(2)
+
+		# add to cash register
+		ones += tendered[0]
+		fives += tendered[1]
+		tens += tendered[2]
+		twenties += tendered[3]
+
+		# insufficient number of denominations
+		if requested[0] > ones or requested[1] > fives or requested[2] > tens or requested[3] > twenties:
+			exit(3)
+
+		# give buyer their change back
+		ones -= requested[0]
+		fives -= requested[1]
+		tens -= requested[2]
+		twenties -= requested[3]
+		update_file([ones, fives, tens, twenties], sales) # update the state
+
+		print(" ".join(args[equal_index + 1:]))
+	except TypeError:
+		exit(1)
+	except ValueError:
+		exit(1)
+
+def report():
+	"""Output a single line, the total of the drawer, and a breakdown of the bills."""
+	data = get_from_file()
+
+	sales = int(data['sales'])
+	total = int(data['total'])
+	ones = int(data['ones'])
+	fives = int(data['fives'])
+	tens = int(data['tens'])
+	twenties = int(data['twenties'])
+	print(f'{sales} : {total} = {ones} {fives} {tens} {twenties}')
+
+def update_file(money: list, sales: int):
+	"""Updates a JSON file with the passed in args.
+		Arguments:
+			money: a list storing the number of denominations
+			sales: the amount of money from purchases
+		Output:
+			N/A"""
+	cwd = os.path.dirname(__file__)
+	target = os.path.join(cwd, 'state.json')
+	total = get_total(money)
+	data = dict(sales=sales, total=total, ones=money[0], fives=money[1], tens=money[2], twenties=money[3])
+	with open(target, 'w+') as f:
+		json.dump(data, f)
+
+def get_from_file() -> dict:
+	"""Returns a dictionary of all the data stored in the state.yaml file."""
+	try:
+		cwd = os.path.dirname(__file__)
+		target = os.path.join(cwd, 'state.json')
+		with open(target, 'r') as f:
+			return json.load(f)
+	except FileNotFoundError:
+		exit(4)
+
+def get_total(money: list) -> int:
+	"""Returns the total amount of money based on the number of denominations.
+		Arguments:
+			money: a list of 4 elements storing the number of denominations"""
+	return money[0] + 5 * money[1] + 10 * money[2] + 20 * money[3]
+
+def main():
+	"""Main Function"""
+	args = argv[1:]
+	if not len(args):
+		exit(1)
+	if args[0] == '-h' or args[0] == '--help':
+		help()
+	elif args[0] == 'init':
+		init(args[1:])
+	elif args[0] == 'purchase':
+		purchase(args[1:])
+	elif args[0] == 'change':
+		change(args[1:])
+	elif args[0] == 'report':
+		report()
+	else:	
+		exit(1)
+	
+def help():
+	"""Prints all the syntax to help the user."""
+	print('Possible Arguments:')
+	print('\tinit:')
+	print('\t\tinitializes the cash register with a number of bills per denomination.')
+	print('\t\tFormat: `init amt = ones [fives [tens [twenties]]]`')
+	print('\t\t\tExample: `assn4 init 74 = 4 0 1 3`')
+	print('\tpurchase:')
+	print('\t\tPerforms a sale for the total amount of price given bills of each denomination.')
+	print('\t\tIf the total number of bills exceeds the amount of the price, it will make change.')
+	print('\t\tFormat: `purchase price = amount_tendered`')
+	print('\t\t\tExample: `assn4 purchase 64 = 0 1 0 3`')
+	print('\tchange:')
+	print('\t\tGiven a number of bills of each denomination as tendered, return the number of bills per denomination in bills_requested')
+	print('\t\t\tExample: `assn4 change 0 0 0 1 = 5 1 1`')
+	print('\treport:')
+	print('\t\tOutput a single line, the total of the drawer, and a breakdown of the bills')
+	print('\t\t\tExample: `assn4 report`')
+
+if __name__ == "__main__":
+	main()

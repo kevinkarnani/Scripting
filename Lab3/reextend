@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [[ $# -eq 2 ]]; then
+	for f in $(ls -1 *$1) ; do
+		echo "$f has been changed to ${f%$1}$2"
+		mv $f ${f%$1}$2
+		exit 0
+	done
+elif [[ $# -gt 2 ]] ; then
+	echo "There is/are $(( $#-2 )) extra parameters. Please enter only 2 parameters."
+	exit 2
+else
+	echo "There is/are $(( 2-$# )) missing parameters. Please enter at least 2 parameters."
+	exit 2
+fi

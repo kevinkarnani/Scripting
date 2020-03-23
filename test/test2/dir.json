@@ -1,0 +1,11 @@
+{
+	"index": "",
+	"required": {
+		"files": ["file2"],
+		"directories": []
+	},
+	"others": {
+		"files": ["dir.json", "file1", "file3", "README"],
+		"directories": ["test3", "testempty"]
+	}
+}

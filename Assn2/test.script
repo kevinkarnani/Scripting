@@ -1,0 +1,122 @@
+#!/bin/bash
+
+# This is the testing script for assn4.
+# NOTE: MUST DELETE state.json BEFORE EXECUTION!!!! Run `make test` to do this.
+
+echo "You need to run 'make test' before running this script."
+echo "Have you done this yet? (Y/N)"
+
+read input
+
+case "$input" in
+	'Y')
+		if [[ -f "./state.json" ]]; then echo "No you didn't. Exiting now."; exit 1; else echo "Okay, let's get this show on the road!"; fi;;
+	'N')
+		echo "Okay, exiting now."; exit 1;;	
+	*)
+		echo "Unexpected Input. Whatever. Exiting now."; exit 1;;
+esac
+
+# Fails to initialize, no output, returns 1
+./assn4 init 400 100 20 10 5
+echo "Error Code: $?. Expected: 1"
+
+# Fails to initialize, no output, returns 1
+./assn4 init -30 = 0 0 1 1
+echo "Error Code: $?. Expected: 1"
+
+# Fails to make purchase, no output, returns 4
+./assn4 purchase 30 = 0 0 -1 -1
+echo "Error Code: $?. Expected: 4"
+
+# Fails to initialize, no output, returns 2
+./assn4 init 400 = 1 1 1 1
+echo "Error Code: $?. Expected: 2"
+
+# Fails to make purchase, no output, returns 4
+./assn4 purchase 10 = 0 0 1
+echo "Error Code: $?. Expected: 4"
+
+# Fails to make change, no output, returns 4
+./assn4 change 0 0 1 = 0 2
+echo "Error Code: $?. Expected: 4"
+
+# Fails to report, no output, returns 4
+./assn4 report
+echo "Error Code: $?. Expected: 4"
+
+# Initialize successfully, no output, returns 0
+./assn4 init 0 = 0
+echo "Error Code: $?. Expected: 0"
+
+# Successfully makes purchase, outputs "0", returns 0
+./assn4 purchase 20 = 0 0 0 1
+echo "Error Code: $?. Expected: 0"
+
+# Successfully reports, outputs "20 : 20 = 0 0 0 1", returns 0
+./assn4 report
+echo "Error code: $?. Expected: 0"
+
+# Fails to make a purchase, no output, returns 3
+./assn4 purchase 10 = 0 0 0 1
+echo "Error Code: $?. Expected: 3"
+
+# Fails to make change, no output, returns 3
+./assn4 change 0 0 0 1 = 0 0 2
+echo "Error Code: $?. Expected: 3"
+
+# Initialize successfully, no output, returns 0
+./assn4 init 400 = 100 20 10 5
+echo "Error Code: $?. Expected: 0"
+
+# Fails to make purchase, no output, returns 1
+./assn4 purchase 1 2 3 4
+echo "Error Code: $?. Expected: 1"
+
+# Fails to make purchase, no output, returns 2
+./assn4 purchase 10 = 0 1
+echo "Error Code: $?. Expected: 2"
+
+# Successfully makes purchase, outputs "0 0 1", returns 0
+./assn4 purchase 10 = 0 0 0 1
+echo "Error Code: $?. Expected: 0"
+
+# Successfully makes purchase, outputs "0 0 0 6", returns 0
+./assn4 purchase 80 = 0 0 20
+echo "Error Code: $?. Expected: 0"
+
+# Fails to make purchase, no output, returns 1
+./assn4 purchase -10 = 0 0 0 1
+echo "Error Code: $?. Expected: 1"
+
+# Fails to make purchase, no output, returns 1
+./assn4 purchase 18 = -8 -1 0 2
+echo "Error Code: $?. Expected: 1"
+
+# Fails to make purchase, no output, returns 2
+./assn4 purchase 100 = 0 0 0 1
+echo "Error Code: $?. Expected: 2"
+
+# Successfully makes change, outputs "0 0 2 0", returns 0
+./assn4 change 0 0 0 1 = 0 0 2
+echo "Error Code: $?. Expected: 0"
+
+# Successfully makes change, outputs "0 0 0 1", returns 0
+./assn4 change 0 4 = 0 0 0 1
+echo "Error Code: $?. Expected: 0"
+
+# Fails to make change, no output, returns 1
+./assn4 change 0 1 0 -2 = -2 0 0 1
+echo "Error Code: $?. Expected: 1"
+
+# Fails to make change, no output, returns 2
+./assn4 change 0 0 0 1 = 1 1 1 1
+echo "Error Code: $?. Expected: 2"
+
+# Fails to make change, no output, returns 3
+./assn4 change 20 = 0 0 0 1
+echo "Error Code: $?. Expected: 3"
+
+# Successfuly reports, outputs "90: 490 = 100 24 27 0", returns 0
+./assn4 report
+echo "Error Code: $?. Expected: 0"

@@ -1,0 +1,28 @@
+
+
+Lab 1
+
+Q1: vi_lab completed alongside this text file
+Q2: Line Two
+Q3: line Three
+Q4: A list of my directories + their permissions
+Q5: User gets Read + Write permissions on that file, everyone else gets Read permissions on that file
+Q6: User gets all permissions on that file, everyone else gets Read + Exec permissions on that file
+Q7: Yes
+Q8: Yes
+Q9: No
+Q10: chmod 700 and chmod 755
+Q11: It gave me an error saying that I was attempting to change a read-only file
+Q12:
+    a) ls * returns all files, directories, and immediate files within directories
+    b) ls a* returns all files whose names start with the letter a (annoy and annoy.cc)
+	 c) ls *m* returns all files whose names contain the letter m in it (itemList, itemList-2cols, TelecomTruths)
+	 d) ls anno? returns files whose name contain anything with anno + another character (annoy)
+	 e) ls annoy? returns files whose names contain anything with annoy + another character (returns an error)
+Q13: It creates two new text files, one named "a" and another named "space".
+Q14:
+    a) The -h flag prints in human readable format
+	 b) The -l flag prints in long list format
+	 c) The -t flag prints after by modification time
+	 d) The -A flag prints all files except the implied . and ..
+	 e) The -d flag prints directory entries rather than contents

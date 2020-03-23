@@ -1,0 +1,13 @@
+Assn 2 (Cash Register)
+
+1. Please, before running ./assn4, run `make build` or `make test`.
+2. Also, every time you run ./test.script, you need to run `make test`. This is because to properly test the exit code of 4, state.json must not be present.
+3. If you are seeing this README, you are seeing my second submission. The only difference between my submissions is an edit so that `test` depends on `build`.
+
+EDIT (For Kurt!!):
+
+I am submitting this on 3/19/2020 due to the submission error.
+As I read the output of `ls -o`, I noticed it was giving a "Permission Denied" for the assn4 file. However, it still listed it out along with the respective perms.
+I do not know how, but somehow everyone only gets execute permissions. I know for a fact I used chmod 755 for the assn4 file.
+Additionally, I was testing till the very end with make commands, so as for how the permissions changed, I truly have no idea.
+I am completely unable to open up the file right now, which wasn't the case earlier.

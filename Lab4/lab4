@@ -1,0 +1,19 @@
+Regex:
+
+1.1) the
+1.2) \bthe\b
+1.3) \bJust\b
+1.4) \b[Jj]ust\b
+1.5) ^\b[Jj]ust\b
+1.6) \b[bm]\b
+1.7) \b(d|br)eath\b
+1.8) \byou[\.,]*$
+1.9) ^\s+
+1.10) ^\s*$
+1.11) 13
+
+Git:
+3.1) b1e8d11
+3.2) git reset only clears the index (unstages all changes). git reset --hard clears the index and returns the current working directory to last committed state.
+3.3) git revert --no-commit dabc8d2...a6a2e69 -- marlin
+
